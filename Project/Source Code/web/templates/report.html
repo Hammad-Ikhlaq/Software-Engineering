@@ -1,0 +1,408 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Lumino - Dashboard</title>
+	<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet">
+	<link href="{% static 'css/datepicker3.css' %}" rel="stylesheet">
+	<link href="{% static 'css/styles.css' %}" rel="stylesheet">
+
+	<!--Custom Font-->
+	<link href="https://fonts.googleapis.com/css?family=Montserrat:300,300i,400,400i,500,500i,600,600i,700,700i"
+		rel="stylesheet">
+	<!--[if lt IE 9]>
+	<script src="js/html5shiv.js"></script>
+	<script src="js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+	<nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+					data-target="#sidebar-collapse"><span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span></button>
+				<a class="navbar-brand" href="#"><span>Lumino</span>Admin</a>
+			</div>
+		</div><!-- /.container-fluid -->
+	</nav>
+	<div id="sidebar-collapse" class="col-sm-3 col-lg-2 sidebar">
+		<div class="profile-sidebar">
+			<div class="profile-usertitle">
+				<div class="profile-usertitle-name">{{ doc.name }}</div>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="divider"></div>
+		<ul class="nav menu">
+			<li><a href="{% url 'home' %}"><em class="fa fa-dashboard">&nbsp;</em> Home</a></li>
+			<li><a href="{% url 'attendence' %}"><em class="fa fa-calendar">&nbsp;</em> Attendance</a>
+			</li>
+			<li><a href="{% url 'work' %}"><em class="fa fa-bar-chart">&nbsp;</em> Work</a></li>
+			<li><a href="{% url 'visitor' %}"><em class="fa fa-toggle-off">&nbsp;</em> Visitors</a></li>
+			{% if type != 1 %}
+			<li><a href="{% url 'addUser' %}"><em class="fa fa-toggle-off">&nbsp;</em> Add User </a></li>
+			<li><a href="{% url 'addAttendance' %}"><em class="fa fa-toggle-off">&nbsp;</em> Add Attendance </a></li>
+			<li><a href="{% url 'addVisitor' %}"><em class="fa fa-toggle-off">&nbsp;</em> Add Visitor </a></li>
+			{% endif %}
+
+			<li class="active"><a href="{% url 'report' %}"><em class="fa fa-toggle-off">&nbsp;</em> Get Report </a>
+			<li><a onclick="location.href={% url 'log' %}"><em class="fa fa-power-off">&nbsp;</em> Logout</a></li>
+		</ul>
+	</div>
+	<!--/.sidebar-->
+
+	<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
+		<div class="row">
+			<ol class="breadcrumb">
+				<li>
+					<em class="fa fa-home"></em>
+				</li>
+				<li class="active">Report</li>
+			</ol>
+		</div>
+		<!--/.row-->
+
+		<div class="row">
+			<div class="col-lg-12">
+				<h1 class="page-header">Report</h1>
+			</div>
+		</div>
+		<!--/.row-->
+
+		<div class="row ">
+			<div class="col-md-6">
+				<form role="form" action="/Report/" method="POST">
+					{% csrf_token %}
+
+					{% if type == 1 %}
+					<div class="form-group" hidden>
+						<label class="col-md-3 control-label">Employee ID</label>
+						<div class="col-md-9">
+							<input type="number" name="eid" value="{{doc.eid}}" class="form-control" required>
+						</div>
+					</div>
+					{% endif %}
+
+					{% if type != 1 %}
+					<div class="form-group">
+						<label class="col-md-3 control-label">Eid</label>
+
+						<div class="col-md-9">
+							<select name="eid" class="form-control" required>
+								{% for i in totalUsers %}
+								<option selected name="{{i}}">{{i}}</option>
+								{% endfor %}
+							</select>
+						</div>
+						{% endif %}
+
+
+						<div class="form-group">
+							<label class="col-md-3 control-label">Selects Start</label>
+							<div class="col-md-9">
+								<select name="dateNow" id="s1" class="form-control" onchange="clickOnChange1()"
+									required>
+									{% for i in timeObj %}
+									<option selected name="{{i}}">{{i}}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-md-3 control-label">Selects End</label>
+							<div class="col-md-9">
+								<select name="dateEnd" id="s2" class="form-control" onchange="clickOnChange2()"
+									required>
+									{% for i in timeObj %}
+									<option name="{{i}}">{{i}}</option>
+									{% endfor %}
+								</select></div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-md-3 control-label"></label>
+							<div class="col-md-9">
+								<input id="selectNow" type="submit" class="btn btn-primary">
+							</div>
+						</div>
+
+				</form>
+			</div>
+		</div>
+
+
+		{% if err %}
+		<script>
+			alert("{{err}}")
+		</script>
+		{% endif %}
+
+
+
+		<script>
+			document.getElementById("s2").getElementsByTagName("option")[0].selected = true;
+
+			function clickOnChange1() {
+				var op = document.getElementById("s2").getElementsByTagName("option");
+				var time = document.getElementById("s1").value;
+				var bool = false;
+
+				for (var i = 0; i < op.length; i++) {
+					op[i].hidden = false
+					if (bool) {
+						op[i].hidden = true
+					}
+
+					if (time == op[i].value) {
+						bool = true
+					}
+				}
+				document.getElementById("s2").disabled = false
+			}
+
+			function clickOnChange2() {
+				var op = document.getElementById("s1").getElementsByTagName("option");
+				var time = document.getElementById("s2").value;
+				var bool = false;
+
+
+
+				for (var i = 0; i < op.length; i++) {
+
+					if (time == op[i].value) {
+						bool = true
+					}
+					op[i].hidden = true
+					if (bool) {
+						op[i].hidden = false
+					}
+
+
+				}
+			}
+		</script>
+
+
+
+		<div class="col-md-12 py-lg-4 py-md-4 py-xl-4 py-sm-0">
+			<div class="panel panel-default">
+
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						Report
+					</div>
+					{% if dateNow %}
+					<div class="panel-body">
+						<form class="form-horizontal">
+							<fieldset>
+
+									<div class="form-group">
+											<label class="col-md-3 col-lg-3 col-sm-6 control-label" for="name">
+												<h3> Employee ID <strong>{{ userId }}</strong></h3>
+											</label>
+										</div>
+
+								<div class="form-group">
+									<label class="col-md-3 col-lg-3 col-sm-6 control-label" for="name">
+										<h3> From <strong>{{ dateNow }}</strong> To <strong>{{ dateEnd }}</strong></h3>
+									</label>
+								</div>
+
+							</fieldset>
+
+
+
+
+
+
+							<fieldset>
+								<div class="form-group">
+									<label class="col-md-3 col-lg-3 col-sm-12 control-label" for="name">Work Selector
+									</label>
+									<div class="col-lg-6 col-md-3 col-sm-12">
+
+										<button type="button" id="b1" class="btn btn-primary py-3" onclick="over()">
+											OverWork
+										</button>
+										<button type="button" id="b2" class="btn btn-primary py-3" onclick="under()">
+											UnderWork
+										</button>
+										<button type="button" id="b3" class="btn btn-primary py-3" onclick="regular()">
+											Regular Work
+										</button>
+									</div>
+								</div>
+							</fieldset>
+
+						</form>
+					</div>
+					{% endif %}
+				</div>
+
+
+
+
+
+
+
+				<table class="table" id="table">
+					<tr id="header">
+						<th scope="col">Date</th>
+						<th scope="col" id="wo">Work</th>
+					</tr>
+					<tbody>
+
+						{% if report %}
+
+						{% for key, value in report.items %}
+						<tr>
+
+
+							{% if value > 0  %}
+
+
+							{% if value < 8  %}
+
+							<td class="myDate under">{{key}}</td>
+
+							<td class="under work" style="color:rgb(207, 207, 9); ">{{value}} Hours</td>
+							{% endif %}
+
+							{% if value >= 8 and value <= 9 %}
+							<td class="myDate regular">{{key}}</td>
+
+
+							<td class="text-primary regular work">{{value}} Hours</td>
+							{% endif %}
+
+							{% if value > 9 %}
+
+							<td class="myDate over">{{key}}</td>
+
+							<td class="over work" style="color:rgb(36, 187, 111);">{{value}} Hours</td>
+							{% endif %}
+
+							{% endif %}
+
+
+
+
+						</tr>
+						{% endfor %}
+						{% endif %}
+
+					</tbody>
+				</table>
+
+
+			</div>
+		</div>
+
+
+
+	</div>
+	<!--/.main-->
+
+
+
+
+
+
+
+
+
+
+
+	<script>
+
+
+			function over() {
+				var element = document.getElementById("b1");
+					var el = document.getElementsByClassName("over")
+					for (let step = 0; step < el.length; step++) {
+						if(el[step].hidden==true){
+							el[step].hidden = false;
+							element.classList.add("btn-primary");
+							element.classList.remove("btn-danger");
+						}
+						else{
+							el[step].hidden = true;
+							element.classList.add("btn-danger");
+							element.classList.remove("btn-primary");
+						}
+					}
+			}
+
+
+			function under() {
+				var element = document.getElementById("b2");
+					var el = document.getElementsByClassName("under")
+					for (let step = 0; step < el.length; step++) {
+						if(el[step].hidden==true){
+							el[step].hidden = false;
+							element.classList.add("btn-primary");
+							element.classList.remove("btn-danger");
+						}
+						else{
+							el[step].hidden = true;
+							element.classList.add("btn-danger");
+							element.classList.remove("btn-primary");
+						}
+					}
+			}
+
+			function regular() {
+				var element = document.getElementById("b3");
+					var el = document.getElementsByClassName("regular")
+					for (let step = 0; step < el.length; step++) {
+						if(el[step].hidden==true){
+							el[step].hidden = false;
+							element.classList.add("btn-primary");
+							element.classList.remove("btn-danger");
+						}
+						else{
+							el[step].hidden = true;
+							element.classList.add("btn-danger");
+							element.classList.remove("btn-primary");
+						}
+					}
+			}
+			under()
+			over()
+
+			
+		</script>
+
+
+
+
+
+
+
+
+
+
+
+
+	<script src="{% static 'js/jquery-1.11.1.min.js' %}"></script>
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'js/chart.min.js' %}"></script>
+	<script src="{% static 'js/chart-data.js' %}"></script>
+	<script src="{% static 'js/easypiechart.js' %}"></script>
+	<script src="{% static 'js/easypiechart-data.js' %}"></script>
+	<script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
+	<script src="{% static 'js/custom.js' %}"></script>
+
+
+</body>
+
+</html>
